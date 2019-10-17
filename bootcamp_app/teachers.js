@@ -6,18 +6,23 @@ const pool = new Pool({
   host: 'localhost',
   database: 'bootcampx'
 });
+
 let cohortMonth = process.argv[2];
-let numOfResults = process.argv[3];
+
+
 pool.query(`
-SELECT students.id as student_id, students.name as name, cohorts.name as cohort
-FROM students
+SELECT teachers.name as teacher, cohorts.name as cohort
+FROM assistance_requests
+JOIN teachers ON teachers.id = teacher_id
+JOIN students ON students.id = student_id
 JOIN cohorts ON cohorts.id = cohort_id
-WHERE cohorts.name LIKE '%${cohortMonth}%'
-LIMIT ${numOfResults || 5};
+WHERE cohorts.name = '${cohortMonth || 'JUL02'}'
+GROUP BY teacher, cohort
+ORDER BY teacher;
 `)
   .then(res => {
     res.rows.forEach(user => {
-      console.log(`${user.name} has an id of ${user.student_id} and was in the ${user.cohort} cohort`);
+      console.log(`${user.cohort}: ${user.teacher}`);
     });
   })
   .catch(err => console.error('query error', err.stack));
